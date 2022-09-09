@@ -3,10 +3,10 @@
 This is the README for the 453 Project
 
 Team Members:
--Kenneth
--Lia 
--Bhavit
--ShenZhao
+1. Kenneth
+2. Lia 
+3. Bhavit
+4. ShenZhao
 
 # Current Ideas
 1. Smart Panel (Solar)
