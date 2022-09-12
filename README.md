@@ -6,7 +6,7 @@ Team Members:
 1. Kenneth
 2. Lia 
 3. Bhavit
-4. ShenZhao
+4. Mike
 
 # Current Ideas
 1. Smart Panel (Solar)
