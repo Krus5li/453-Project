@@ -16,7 +16,7 @@ Team Members:
 5. Smart Mirror                   (Tertiary Idea)
 
 
-#Main Idea (Elderly People Monitor)
+# Main Idea (Elderly People Monitor)
 Questions/Things to Find Out:
 1. How to detect/determine legitimate fall
 2. How many biometrics are we taking?
