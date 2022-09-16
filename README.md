@@ -13,3 +13,4 @@ Team Members:
 2. Impact Monitor/Transponder
 3. Elderly / Ill People Monitor
 4. Medical Dispenser
+5. Smart Mirror
