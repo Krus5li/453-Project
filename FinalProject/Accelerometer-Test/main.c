@@ -97,6 +97,8 @@ int main(void)
     AT42QT2120_init();
 
     button_status = AT42QT2120_read_buttons();
+    bool polling_mode = false;
+    bool alert_mode = false;
 
 #endif
 
@@ -110,58 +112,36 @@ int main(void)
     while(1)
     {
 #if ENABLE_I2C
-    	//uint8_t res = LSM6DSRX_read_reg(LSM6DSRX_FIFO_STATUS1);
-    	//printf("Count: %d\n\r", res);
-		printf("Val_X: %i\n\r", LSM6DSRX_read_data_X());
 
-    	/*
-    	if(ALERT_AT42QT2120_CHANGE)
-		{
-			ALERT_AT42QT2120_CHANGE = false;
+    	while(!polling_mode) {
+            int16_t* XL_data;
+            int16_t test[3];
+            XL_data = getBatchAvg(test);
+            printf("X: %d	Y: %d	Z:%d\n\r", XL_data[0], XL_data[1], XL_data[2]);
+        	cyhal_system_delay_ms(150);
 
-			button_status = AT42QT2120_read_buttons();
-			if(button_status & 0x01)
-			{
-				printf("BLUE ON\n\r");
-				AT42QT2120_write_reg(BLUE_LED_REG_ADDR, BLUE_LED_REG_VAL_ON);
-			}
-			else
-			{
-				AT42QT2120_write_reg(BLUE_LED_REG_ADDR, BLUE_LED_REG_VAL_OFF);
-			}
+        	if(ALERT_PUSH_BUTTON) {
+        		printf("===== FALL DETECTED =====\n\r");
+        		LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL4, LSM6DSRX_FIFO_BUFFER_RESET);		//Empty FIFO buffer/Bypass Mode.
+        		polling_mode = true;
+        		ALERT_PUSH_BUTTON = false;
+        	}
 
-			if(button_status & 0x04)
-			{
-				printf("YELLOW ON\n\r");
-				AT42QT2120_write_reg(YELLOW_LED_REG_ADDR, YELLOW_LED_REG_VAL_ON);
-			}
-			else
-			{
-				AT42QT2120_write_reg(YELLOW_LED_REG_ADDR, YELLOW_LED_REG_VAL_OFF);
-			}
+    	}
 
-			if(button_status & 0x02)
-			{
-				printf("GREEN ON\n\r");
-				AT42QT2120_write_reg(GREEN_LED_REG_ADDR, GREEN_LED_REG_VAL_ON);
-			}
-			else
-			{
-				AT42QT2120_write_reg(GREEN_LED_REG_ADDR, GREEN_LED_REG_VAL_OFF);
-			}
+    	while(!alert_mode) {
+    		printf("IN ALERT MODE\n\r");
+    		cyhal_system_delay_ms(500);
+    		if(ALERT_PUSH_BUTTON) {
+    			printf("===== ALERT CALLED OFF =====");
+    			alert_mode = true;
+    		}
 
-			if(button_status & 0x08)
-			{
-				printf("RED ON\n\r");
-				AT42QT2120_write_reg(RED_LED_REG_ADDR, RED_LED_REG_VAL_ON);
-			}
-			else
-			{
-				AT42QT2120_write_reg(RED_LED_REG_ADDR, RED_LED_REG_VAL_OFF);
-			}
-		}
-		*/
+    	}
+
+
 #endif
+    	/*
     	if(ALERT_PUSH_BUTTON)
     	{
     		ALERT_PUSH_BUTTON = false;
@@ -176,6 +156,7 @@ int main(void)
 			cInputIndex = 0;
 			memset(pcInputString,0,DEBUG_MESSAGE_MAX_LEN);
 		}
+		*/
     }
 }
 
