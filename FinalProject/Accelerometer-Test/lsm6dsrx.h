@@ -20,7 +20,7 @@
 
 #define LSM6DSRX_SUB_ADDR							0x6A
 #define LSM6DSRX_CTRL1_XL_SUB_ADDR					0x10
-#define LSM6DSRX_CTRL1_XL_NORMAL					0xA0
+#define LSM6DSRX_CTRL1_XL_NORMAL					0xA3
 #define LSM6DSRX_CTRL1_XL_HIGH						0x60
 #define LSM6DSRX_CTRL2_G_SUB_ADDR					0x11
 
@@ -53,6 +53,7 @@
 
 #define LSM6DSRX_FIFO_STATUS2						0x3B
 
+#define LSM6DSRX_INT_ADDR							0x1A
 
 
 void LSM6DSRX_write_reg(uint8_t reg, uint8_t value);
@@ -78,6 +79,8 @@ int16_t LSM6DSRX_read_data_X(void);
 int16_t LSM6DSRX_read_data_Y(void);
 
 int16_t LSM6DSRX_read_data_Z(void);
+
+bool LSM6DSRX_check_freefall(void);
 
 void LSM6DSRX_buffer_reset(void);
 

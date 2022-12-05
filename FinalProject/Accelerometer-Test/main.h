@@ -14,6 +14,7 @@
 #include "i2c.h"
 #include "at42qt2120.h"
 #include "lsm6dsrx.h"
+#include "bh1792glc.h"
 
 
 #endif /* MAIN_H_ */

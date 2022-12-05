@@ -192,6 +192,15 @@ int16_t* getBatchAvg(int16_t* result) {
 	return result;
 }
 
+bool LSM6DSRX_check_freefall() {
+	if(LSM6DSRX_read_reg(LSM6DSRX_INT_ADDR) % 2 != 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 void LSM6DSRX_config() {
 	LSM6DSRX_write_reg(LSM6DSRX_CTRL1_XL_SUB_ADDR, LSM6DSRX_CTRL1_XL_NORMAL); 	//Activate Accelerometer at Normal Mode
 	LSM6DSRX_write_reg(LSM6DSRX_CTRL2_G_SUB_ADDR, 0x00);						//Power Down gyroscope
@@ -200,6 +209,7 @@ void LSM6DSRX_config() {
 	LSM6DSRX_buffer_reset();													//Reset the contents of the FIFO buffer
 	LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL1, FIFO_BUFF_SIZE);					//Configure FIFO Buffer Size to be size 32
 	LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL2, LSM6DSRX_FIFO_CONFIG);				//Interrupt FIFO when Full, batch per 16
+	LSM6DSRX_write_reg(0x58, 0xD0);												//Enable Free-Fall
 
 }
 

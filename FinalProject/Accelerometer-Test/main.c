@@ -44,7 +44,10 @@
 #include "cybsp.h"
 
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
 #define ENABLE_I2C 1
+#define ENABLE_HEARTRATE_TEST 1
 
 /******************************************************************************
  * These MACROS where defined using information for the AT42QT2120 datasheet.
@@ -93,8 +96,8 @@ int main(void)
     LSM6DSRX_config();
 
 
-    printf("* -- Initializing AT42QT2120\n\r");
-    AT42QT2120_init();
+    printf("* -- Initializing BH1792GLC\n\r");
+    BH1792GLC_config();
 
     button_status = AT42QT2120_read_buttons();
     bool polling_mode = false;
@@ -107,39 +110,104 @@ int main(void)
 	/* Enable global interrupts */
 	__enable_irq();
 
+	printf("* -- Setting Up Timer\n\r");
+	cyhal_timer_t timer_obj;
+	cyhal_timer_t timer_1s;
+	const cyhal_timer_cfg_t timer_cfg =
+	    {
+	        .compare_value = 0,                 	 	// Timer compare value, not used
+	        .period        = 20000,              		// Timer period set to a large enough value	compared to event being measured
+	        .direction     = CYHAL_TIMER_DIR_UP, 		// Timer counts up
+	        .is_compare    = false,              		// Don't use compare mode
+	        .is_continuous = false,              		// Do not run timer indefinitely
+	        .value         = 0                   		// Initial value of counter
+	    };
     printf("****************** \r\n\n");
 
-    while(1)
-    {
+/*
+#if ENABLE_HEARTRATE_TEST
+    while(!ALERT_PUSH_BUTTON) {
+    	printf("HeartRate: %d", BH1792GLC_read_data());
+    	cyhal_system_delay_ms(200);
+    }
+#endif
+*/
 #if ENABLE_I2C
+while(1) {
+	if(ALERT_PUSH_BUTTON) {
+		ALERT_PUSH_BUTTON = false;
+		/*
+		cy_rslt_t rslt_1s;
+		rslt_1s = cyhal_timer_init(&timer_1s, NC, NULL);
+		cyhal_timer_configure(&timer_1s, &timer_cfg);
+		cyhal_timer_set_frequency(&timer_1s, 10000);
+		cyhal_timer_start(&timer_1s);
+		uint32_t read_val_1s = 0;
+		uint32_t read_val_1s_old = read_val_1s;
+		*/
+		while(ALERT_PUSH_BUTTON == false) {
+			/*
+			read_val_1s_old = read_val_1s;
+			read_val_1s = cyhal_timer_read(&timer_1s);
+			if(read_val_1s - read_val_1s_old  >= 9000) {
+				BH1792GLC_write_reg(BH1792GLC_SYNC, 0x01);
+			}
+			*/
+			printf("FIFO CNT: %d\n\r", BH1792GLC_read_reg(BH1792GLC_FIFO_CNT));
+			printf("HeartRate: %d\n\r", BH1792GLC_read_data());
 
-    	while(!polling_mode) {
-            int16_t* XL_data;
-            int16_t test[3];
-            XL_data = getBatchAvg(test);
-            printf("X: %d	Y: %d	Z:%d\n\r", XL_data[0], XL_data[1], XL_data[2]);
-        	cyhal_system_delay_ms(150);
+			if(BH1792GLC_read_reg(BH1792GLC_FIFO_CNT) == 0) {
+				BH1792GLC_write_reg(BH1792GLC_SYNC, 0x01);
+			}
 
-        	if(ALERT_PUSH_BUTTON) {
-        		printf("===== FALL DETECTED =====\n\r");
-        		LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL4, LSM6DSRX_FIFO_BUFFER_RESET);		//Empty FIFO buffer/Bypass Mode.
-        		polling_mode = true;
-        		ALERT_PUSH_BUTTON = false;
-        	}
+			cyhal_system_delay_ms(50);
+		}
+		ALERT_PUSH_BUTTON = false;
+		while(!polling_mode) {
+			if(LSM6DSRX_check_freefall()) {
+				printf("===== FALL DETECTED =====\n\r");
+				LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL4, LSM6DSRX_FIFO_BUFFER_RESET);		//Empty FIFO buffer/Bypass Mode.
+				polling_mode = true;
+				ALERT_PUSH_BUTTON = false;
+			}
 
-    	}
-
-    	while(!alert_mode) {
-    		printf("IN ALERT MODE\n\r");
-    		cyhal_system_delay_ms(500);
-    		if(ALERT_PUSH_BUTTON) {
-    			printf("===== ALERT CALLED OFF =====");
-    			alert_mode = true;
-    		}
-
-    	}
-
-
+		}
+		polling_mode = false;
+		// Initialize the timer object. Does not use pin output ('pin' is NC) and does not use a
+		// pre-configured clock source ('clk' is NULL).
+		cy_rslt_t rslt;
+		rslt = cyhal_timer_init(&timer_obj, NC, NULL);
+		cyhal_timer_configure(&timer_obj, &timer_cfg);
+		cyhal_timer_set_frequency(&timer_obj, 10000);
+		cyhal_timer_start(&timer_obj);
+		uint32_t read_val = 0;
+		ALERT_PUSH_BUTTON = false;
+		while(!alert_mode) {
+			cyhal_system_delay_ms(500);
+			printf("IN ALERT MODE\n\r");
+			// Read the current timer value, which should be close to the amount of delay in ms * 10 (5000)
+			read_val = cyhal_timer_read(&timer_obj);
+			printf("Time: %d\n\r", read_val);
+			if(ALERT_PUSH_BUTTON) {
+				printf("===== ALERT CALLED OFF =====\n\r");
+				cyhal_timer_stop(&timer_obj);
+				alert_mode = true;
+				ALERT_PUSH_BUTTON = false;
+				break;
+			}
+			if(read_val >= 50000) {
+				cyhal_timer_stop(&timer_obj);
+				while(1) {
+					printf("==== CALL FOR HELP ====\n\r");
+					cyhal_system_delay_ms(500);
+				}
+			}
+		}
+		alert_mode = false;
+	}
+	printf("WAITING TO START\n\r");
+	cyhal_system_delay_ms(500);
+}
 #endif
     	/*
     	if(ALERT_PUSH_BUTTON)
@@ -157,7 +225,6 @@ int main(void)
 			memset(pcInputString,0,DEBUG_MESSAGE_MAX_LEN);
 		}
 		*/
-    }
 }
 
 
