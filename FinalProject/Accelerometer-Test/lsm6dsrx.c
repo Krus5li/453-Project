@@ -210,6 +210,7 @@ void LSM6DSRX_config() {
 	LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL1, FIFO_BUFF_SIZE);					//Configure FIFO Buffer Size to be size 32
 	LSM6DSRX_write_reg(LSM6DSRX_FIFO_CTRL2, LSM6DSRX_FIFO_CONFIG);				//Interrupt FIFO when Full, batch per 16
 	LSM6DSRX_write_reg(0x58, 0xD0);												//Enable Free-Fall
+	LSM6DSRX_write_reg(0x5D, 0xA4);												//Free-Fall triggers in 500g acceleration, duration of 2ODR.
 
 }
 

@@ -23,7 +23,7 @@ void push_button_handler(void* handler_arg, cyhal_gpio_event_t event)
 {
 	ALERT_PUSH_BUTTON = true;
 
-	cyhal_gpio_toggle(PIN_USER_LED);
+	//cyhal_gpio_toggle(PIN_USER_LED);
     /*ADD CODE to toggle the LED ON/Off) */
 
 }

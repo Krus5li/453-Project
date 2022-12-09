@@ -28,7 +28,7 @@ void leds_init(void)
 			PIN_USER_LED,                // Pin
 			CYHAL_GPIO_DIR_OUTPUT,      // Direction
 			CYHAL_GPIO_DRIVE_STRONG,    // Drive Mode
-			true);				        // InitialValue
+			false);				        // InitialValue
 }
 
 

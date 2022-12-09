@@ -57,6 +57,10 @@ uint16_t BH1792GLC_read_data();
 
 uint16_t BH1792GLC_burstread_reg(uint8_t reg);
 
+uint16_t BH1792GLC_AvgCalib();
+
+bool BH1792GLC_get_hrm_raw(uint16_t avg);
+
 void BH1792GLC_config(void);
 
 #endif /* BH1792GLC_H_ */

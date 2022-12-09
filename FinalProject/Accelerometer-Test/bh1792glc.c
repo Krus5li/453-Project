@@ -146,6 +146,15 @@ uint16_t BH1792GLC_findAvg() {
 	return hrm_avg;
 
 }
+
+uint16_t BH1792GLC_AvgCalib() {
+	int i = 0;
+	uint32_t val = 0;
+	for(i = 0; i < 5; i++) {
+		val += BH1792GLC_read_data();
+	}
+	return val/5;
+}
 // True are signal peaks
 // False are signal troughs
 bool BH1792GLC_get_hrm_raw(uint16_t avg) {
@@ -156,7 +165,6 @@ bool BH1792GLC_get_hrm_raw(uint16_t avg) {
 		return true;
 	}
 }
-
 
 
 void BH1792GLC_config() {
